@@ -20,7 +20,7 @@ This project is a simple command-line tool to convert JUnit XML test reports int
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/junit-reporter.git
+   git https://github.com/kornkutan/junit-reporter.git
    cd junit-reporter
    ```
 
