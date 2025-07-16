@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Execution Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-family: 'DM Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            --primary-color: rgb(62, 59, 197);
+            --dark-gray: #2F4F4F; /* DarkSlateGray */
+            --medium-gray: #708090; /* SlateGray */
+            --light-gray: #F5F5F5; /* WhiteSmoke */
+            --border-color: #DCDCDC; /* Gainsboro */
+            --success-color: #3CB371; /* MediumSeaGreen */
+            --danger-color: #DC143C; /* Crimson */
+            --skipped-color: #778899; /* LightSlateGray */
+            --white-color: #FFFFFF;
+        }
+        body {
+            font-family: var(--font-family);
+            color: var(--dark-gray);
+            background-color: var(--light-gray);
+            margin: 0;
+            padding: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .report-container {
+            max-width: 1100px;
+            margin: auto;
+            background-color: var(--white-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        header {
+            background-color: var(--white-color);
+            color: var(--dark-gray);
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        header span {
+            font-size: 12px;
+            color: var(--medium-gray);
+        }
+        main {
+            padding: 24px;
+        }
+        h2 {
+            font-size: 18px;
+            color: var(--dark-gray);
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .summary-card {
+            padding: 16px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        .summary-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            display: block;
+        }
+        .summary-card .label {
+            font-size: 12px;
+            color: var(--medium-gray);
+            text-transform: uppercase;
+        }
+        .summary-card.passed .value { color: var(--success-color); }
+        .summary-card.failed .value { color: var(--danger-color); }
+        .summary-card.skipped .value { color: var(--skipped-color); }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 24px;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        th, td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+            vertical-align: top;
+            font-size: 13px;
+        }
+        thead th {
+            background-color: var(--light-gray);
+            font-weight: 500;
+            color: var(--medium-gray);
+            text-transform: uppercase;
+            font-size: 11px;
+            border-top: 1px solid var(--border-color);
+        }
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--white-color);
+            text-transform: uppercase;
+        }
+        .status-passed { background-color: var(--success-color); }
+        .status-failed, .status-error { background-color: var(--danger-color); }
+        .status-skipped { background-color: var(--skipped-color); }
+
+        .details-section details {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-top: 16px;
+        }
+        .details-section summary {
+            padding: 12px;
+            background-color: var(--light-gray);
+            font-weight: 500;
+            cursor: pointer;
+            outline: none;
+        }
+        pre {
+            background-color: #2b2b2b;
+            color: #f8f8f2;
+            padding: 12px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        footer {
+            font-size: 12px;
+            text-align: center;
+            padding: 16px;
+            color: var(--medium-gray);
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+<div class="report-container">
+    <header>
+        <h1>Test Execution Report</h1>
+        <span><%= reportDate %></span>
+    </header>
+    <main>
+        <section class="summary">
+            <h2>Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <span class="value"><%= summary.total %></span>
+                    <span class="label">Total</span>
+                </div>
+                <div class="summary-card passed">
+                    <span class="value"><%= summary.passed %></span>
+                    <span class="label">Passed</span>
+                </div>
+                <div class="summary-card failed">
+                    <span class="value"><%= summary.failures + summary.errors %></span>
+                    <span class="label">Failed</span>
+                </div>
+                <div class="summary-card skipped">
+                    <span class="value"><%= summary.skipped %></span>
+                    <span class="label">Skipped</span>
+                </div>
+                <div class="summary-card">
+                    <span class="value"><%= summary.duration.toFixed(3) %>s</span>
+                    <span class="label">Duration</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="visuals">
+            <h2>Analytics</h2>
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="slowestTestsChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <% if (failures.length > 0) { %>
+            <section class="failures">
+                <h2>Failures & Errors</h2>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Test Case</th>
+                        <th>Class</th>
+                        <th>Time</th>
+                        <th>Details</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <% failures.forEach(test => { %>
+                        <tr>
+                            <td><span class="status-badge status-<%= test.status.toLowerCase() %>"><%= test.status %></span></td>
+                            <td><%= test.name %></td>
+                            <td><%= test.classname %></td>
+                            <td><%= test.time.toFixed(3) %>s</td>
+                            <td>
+                                <strong><%= test.failure.type %></strong>
+                                <pre><%= test.failure.message %></pre>
+                            </td>
+                        </tr>
+                    <% }) %>
+                    </tbody>
+                </table>
+            </section>
+        <% } %>
+
+        <section class="details-section">
+            <details>
+                <summary>All Test Results (<%= allTests.length %>)</summary>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Test Case</th>
+                        <th>Class</th>
+                        <th>Time (s)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <% allTests.forEach(test => { %>
+                        <tr>
+                            <td><span class="status-badge status-<%= test.status.toLowerCase() %>"><%= test.status %></span></td>
+                            <td><%= test.name %></td>
+                            <td><%= test.classname %></td>
+                            <td><%= test.time.toFixed(3) %></td>
+                        </tr>
+                    <% }) %>
+                    </tbody>
+                </table>
+            </details>
+        </section>
+
+    </main>
+    <footer>
+        <span>Generated by JUnit Reporter</span>
+    </footer>
+</div>
+
+<script>
+  const chartData = {
+    summary: <%- JSON.stringify(summary) %>,
+    slowestTests: <%- JSON.stringify(slowestTests) %>
+  };
+
+  const chartFont = {
+      family: 'DM Sans',
+      size: 12,
+  };
+
+  // 1. Status Pie Chart
+  const ctxStatus = document.getElementById('statusChart').getContext('2d');
+  new Chart(ctxStatus, {
+    type: 'doughnut',
+    data: {
+      labels: ['Passed', 'Failed/Errors', 'Skipped'],
+      datasets: [{
+        data: [chartData.summary.passed, chartData.summary.failures + chartData.summary.errors, chartData.summary.skipped],
+        backgroundColor: ['var(--success-color)', 'var(--danger-color)', 'var(--skipped-color)'],
+        borderColor: 'var(--white-color)',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top', labels: { font: chartFont } },
+        title: { display: true, text: 'Test Status', font: { ...chartFont, size: 14, weight: '500' } }
+      }
+    }
+  });
+
+  // 2. Slowest Tests Bar Chart
+  const ctxSlowest = document.getElementById('slowestTestsChart').getContext('2d');
+  new Chart(ctxSlowest, {
+    type: 'bar',
+    data: {
+      labels: chartData.slowestTests.map(t => t.name.length > 35 ? t.name.substring(0, 32) + '...' : t.name),
+      datasets: [{
+        label: 'Execution Time (s)',
+        data: chartData.slowestTests.map(t => t.time),
+        backgroundColor: 'rgba(62, 59, 197, 0.7)',
+        borderColor: 'rgba(62, 59, 197, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: 'Top 5 Slowest Tests', font: { ...chartFont, size: 14, weight: '500' } }
+      },
+      scales: {
+        x: { beginAtZero: true, ticks: { font: chartFont } },
+        y: { ticks: { font: chartFont } }
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
