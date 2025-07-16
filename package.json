@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "report": "bun run generate-report.ts"
+    "report": "bun run generate-report.ts",
+    "build": "bun build ./generate-report.ts --compile --outfile ./dist/junit-reporter"
   },
   "devDependencies": {
     "@types/bun": "latest",
