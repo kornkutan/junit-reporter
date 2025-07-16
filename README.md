@@ -45,6 +45,20 @@ bun run generate-report.ts TEST-com.example.TestSuite.xml
 
 The script will create a new HTML file in the `reports` directory, named with a timestamp (e.g., `reports/report-2025-07-17T12-00-00-000Z.html`).
 
+## Building from Source
+
+You can also compile the script into a standalone executable.
+
+```bash
+bun run build
+```
+
+This will create a binary named `junit-reporter` in the `dist` directory. You can then run it directly:
+
+```bash
+./dist/junit-reporter <path-to-your-xml-file.xml>
+```
+
 ## Project Structure
 
 - `generate-report.ts`: The main script that parses the XML and generates the HTML report.
